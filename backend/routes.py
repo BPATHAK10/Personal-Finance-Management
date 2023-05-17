@@ -51,7 +51,13 @@ def collect_data():
     # All data is collected successfully
         processed_data = process_data(bank1_data,bank2_data,payment_data)
         print(processed_data)
+
+        analysis_results = perform_analysis(processed_data)
+
         return jsonify({'success':'data successfully collected and normalized'}),200
     else:
         return jsonify({'error':'data could not be collected'}),401
 
+@app.route('/dashboard',methods=["GET"])
+def get_dashboard_data():
+    return jsonify({'success':'this is the data'}),200

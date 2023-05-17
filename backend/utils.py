@@ -108,3 +108,6 @@ def process_data(bank1_data, bank2_data,payment_data):
     df_combined.to_csv('aggregated_data.csv',index=False)
 
     return df_combined
+
+def perform_analysis(df_combined):
+     pass
