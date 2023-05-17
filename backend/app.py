@@ -18,24 +18,5 @@ API_URL = 'http://127.0.0.1:5001/'
 
 from routes import *
 
-# Set token expiration time in minutes
-TOKEN_EXPIRATION_MINUTES = 30
-
-# @app.before_request
-# def check_token_expiration():
-#     # Check if the access token is present in the session
-#     if 'api_access_token' in session:
-#         # Retrieve the token creation time from the session
-#         token_created_at = session.get('token_created_at')
-
-#         # Calculate the expiration time based on the creation time and token expiration duration
-#         token_expiration_time = token_created_at + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)
-
-#         # Check if the token has expired
-#         if datetime.now() > token_expiration_time:
-#             # Token has expired, remove it from the session
-#             session.pop('api_access_token', None)
-#             session.pop('token_created_at', None)
-
 if __name__ == '__main__':
     app.run(debug=True)

@@ -46,11 +46,11 @@ def collect_data():
     bank1_data = get_data('bank1-data', access_token)
     bank2_data = get_data('bank2-data', access_token)
     payment_data= get_data('payment-data', access_token)
-    investment_data = get_data('investment-data', access_token)
 
-    if bank1_data is not None and bank2_data is not None and payment_data is not None and investment_data is not None:
+    if bank1_data is not None and bank2_data is not None and payment_data is not None:
     # All data is collected successfully
-        processed_data = process_data(bank1_data,bank2_data,payment_data,investment_data)
+        processed_data = process_data(bank1_data,bank2_data,payment_data)
+        print(processed_data)
         return jsonify({'success':'data successfully collected and normalized'}),200
     else:
         return jsonify({'error':'data could not be collected'}),401
