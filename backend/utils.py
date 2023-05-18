@@ -105,9 +105,140 @@ def process_data(bank1_data, bank2_data,payment_data):
     df_combined['Normalized Deposit Amount'] /= scaling_factor
     df_combined['Normalized Withdrawal Amount'] /= scaling_factor
 
+    # List of values to choose from
+    values = ['food','clothing', 'lend/borrow','transportation','housing','entertainment','saving','debt','miscellaneous']
+
+    # Function to randomly choose a value
+    def choose_random_value(row):
+        return random.choice(values)
+
+    # Apply the function to fill the column 'A' with random values
+    df_combined['Transaction Category'] = df_combined.apply(choose_random_value, axis=1)
+
     df_combined.to_csv('aggregated_data.csv',index=False)
 
     return df_combined
 
-def perform_analysis(df_combined):
-     pass
+def perform_analysis():
+    data = {}
+    df_combined = pd.read_csv('aggregated_data.csv')
+
+    # spending habits based on category
+    # Calculate total spending per category or transaction type
+    spending_per_category = df_combined.groupby('Transaction Category')['Withdrawal Amount'].sum()
+
+
+    # Sort the spending in descending order
+    sorted_spending = spending_per_category.sort_values(ascending=False)
+    #formating
+    df_spending = pd.DataFrame(sorted_spending)['Withdrawal Amount'].apply(lambda x: '${:,.2f}'.format(x))
+
+    # Print the top 5 spending categories
+    data['spending_categories'] = df_spending.to_json(orient='index')
+
+    # savings progress
+    # Calculate savings rate as a percentage of income or total transactions
+    savings_rate = (df_combined['Deposit Amount'].sum() / df_combined['Withdrawal Amount'].sum()) * 100
+    data['savings_rate'] = savings_rate
+    # Print the savings rate
+    # print(f"Savings Rate: {savings_rate}%")
+
+    # financial recommendation
+    # Convert 'Transaction Date' column to datetime data type
+    df_combined['Transaction Date'] = pd.to_datetime(df_combined['Transaction Date'])
+    # Calculate average monthly expenses
+    monthly_expenses = df_combined.groupby(pd.Grouper(key='Transaction Date', freq='M'))['Withdrawal Amount'].sum()
+    df_monthly_expenses = pd.DataFrame(monthly_expenses)
+
+    # Calculate average monthly income
+    monthly_income = df_combined.groupby(pd.Grouper(key='Transaction Date', freq='M'))['Deposit Amount'].sum()
+    df_monthly_income= pd.DataFrame(monthly_income)
+
+    # Calculate average monthly savings
+    monthly_savings = monthly_income - monthly_expenses
+    df_monthly_savings= pd.DataFrame(monthly_savings)
+    df_monthly_savings.rename(columns={0:'saving'},inplace=True)
+
+    # Calculate the total withdrawal, deposit, and balance
+    total_withdrawal = df_combined['Withdrawal Amount'].sum()
+    total_deposit = df_combined['Deposit Amount'].sum()
+
+    # Plot a bar chart of the total amounts
+    categories = ['Withdrawal', 'Deposit']
+    amounts = [total_withdrawal, total_deposit]
+
+    plt.bar(categories, amounts)
+    plt.xlabel('Type of transaction')
+    plt.ylabel('Amount')
+    plt.title('Total Financial Amounts')
+    plt.savefig('../frontend/personal-finance-frontend/src/assets/bar.png')
+
+    # Line chart of monthly income 
+    df_monthly_income.plot(kind='line')
+    plt.xlabel('Month')
+    plt.ylabel('Total Income')
+    plt.title('Monthly Income')
+
+    plt.savefig('../frontend/personal-finance-frontend/src/assets/line_income.png')
+    # Line chart of monthly expenses
+    df_monthly_expenses.plot(kind='line')
+    plt.xlabel('Month')
+    plt.ylabel('Total Expenses')
+    plt.title('Monthly Expenses')
+
+    plt.savefig('../frontend/personal-finance-frontend/src/assets/line_expense.png')
+
+    # Budgeting
+    # Set budget limits for each category
+    budget = {'food': 5000, 'transportation': 200000, 'housing': 1000}
+
+    # Calculate actual spending for each category
+    actual_spending = df_combined.groupby('Transaction Category')['Withdrawal Amount'].sum()
+
+    # Compare actual spending with budgeted amount
+    budget_status = actual_spending - pd.Series(budget)
+
+    # Identify categories exceeding or staying within the budget
+    exceeded_budget = budget_status[budget_status > 0]
+    within_budget = budget_status[budget_status <= 0]
+
+    data['exceeded_budget'] = exceeded_budget.to_json(orient='index')
+
+    data['within_budget'] = within_budget.to_json(orient='index')
+
+    # Calculate savings and debt amounts
+    savings = df_combined[df_combined['Transaction Category'] == 'saving']['Deposit Amount'].sum()
+    debt = df_combined[df_combined['Transaction Category'] == 'debt']['Withdrawal Amount'].sum()
+
+    # Calculate savings rate and debt-to-income ratio
+    income = 50000000
+    savings_rate = (savings / income) * 100
+    debt_to_income_ratio = (debt / income)
+
+    data['debt_to_income_ration'] = debt_to_income_ratio
+
+    # Get the account numbers of all the banks
+    acc = []
+    account_numbers = df_combined['Account Number'].unique()
+    for account_number in account_numbers:
+        acc.append(account_number)
+
+    data['accounts'] = acc
+
+    # Convert 'Transaction Date' column to datetime data type
+    df_combined['Transaction Date'] = pd.to_datetime(df_combined['Transaction Date'])
+    # Get the latest date in the Transaction Date column
+    latest_date = df_combined['Transaction Date'].max()
+
+    # Calculate the starting date for the last 15 days
+    fifteen_days_ago = latest_date - pd.DateOffset(days=14)
+
+    # Filter the data for the last 15 days
+    df_combined = df_combined[(df_combined['Transaction Date'] >= fifteen_days_ago) & (df_combined['Transaction Date'] <= latest_date)]
+
+
+        # Get the latest balance
+    latest_balance = df_combined['Balance'].iloc[-1]
+    data['balance'] = latest_balance
+
+    return data

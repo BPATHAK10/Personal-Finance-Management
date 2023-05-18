@@ -36,7 +36,7 @@ def login():
     # return jsonify({'try':'success'})
 
 
-    
+@jwt_required()    
 @app.route('/get-data',methods=["GET"])
 def collect_data():
     # get the access token from the session 
@@ -52,7 +52,6 @@ def collect_data():
         processed_data = process_data(bank1_data,bank2_data,payment_data)
         print(processed_data)
 
-        analysis_results = perform_analysis(processed_data)
 
         return jsonify({'success':'data successfully collected and normalized'}),200
     else:
@@ -60,4 +59,8 @@ def collect_data():
 
 @app.route('/dashboard',methods=["GET"])
 def get_dashboard_data():
-    return jsonify({'success':'this is the data'}),200
+    # performs the analysis and stores the result to display in the dashboard
+    results = perform_analysis()
+    print(results)
+    
+    return jsonify({'data': results}),200
