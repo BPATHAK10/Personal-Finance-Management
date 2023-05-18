@@ -19,7 +19,6 @@ def auth_with_api(username,password):
     if response.status_code == 200:
         # Authentication successful
         access_token = response.json().get('access_token')
-        # print("success with token"+access_token)
         return access_token
     else:
         # Authentication failed
@@ -47,13 +46,11 @@ def get_data(endpoint, access_token):
 
 # aggregate and normalize the data
 def process_data(bank1_data, bank2_data,payment_data):
-
     bank1_df = pd.DataFrame(bank1_data)
     bank2_df= pd.DataFrame(bank2_data)
     payment_df= pd.DataFrame(payment_data)
 
     # aggregating the data using pandas
-    #renaming the columns
     # Rename columns in each dataset
     bank1_df = bank1_df.rename(columns={'Account No': 'Account Number', 'DATE': 'Transaction Date', 'TRANSACTION DETAILS': 'Transaction Details', 'CHQ.NO.': 'CHQ.NO.', 'VALUE DATE': 'Value Date', 'WITHDRAWAL AMT': 'Withdrawal Amount', 'DEPOSIT AMT': 'Deposit Amount', 'BALANCE AMT': 'Balance'})
     bank2_df = bank2_df.rename(columns={'Bank Account': 'Account Number', 'Transaction Date': 'Transaction Date', 'Transaction Details': 'Transaction Details', 'Value Date': 'Value Date', 'Withdrawal Amount': 'Withdrawal Amount', 'Deposit Amount': 'Deposit Amount', 'Current Balance': 'Balance'})
@@ -75,7 +72,6 @@ def process_data(bank1_data, bank2_data,payment_data):
     df_combined = pd.concat([bank1_df[common_columns], bank2_df[common_columns], payment_df[common_columns]], ignore_index=True)
 
     # cleaning
-    #handle missing values
     df_combined.fillna(0,inplace=True)  # Fill missing values with 0
 
     df_combined.drop_duplicates(inplace=True)  # Drop duplicate rows
@@ -96,7 +92,7 @@ def process_data(bank1_data, bank2_data,payment_data):
     # Z-score normalization for Balance
     df_combined['Normalized Balance'] = (df_combined['Balance'] - mean_balance) / std_balance
 
-    # Decrease the Deposit Amount, Withdrawal Amount, and Balance columns by dividing them by 1000
+    # Scaling the Deposit Amount, Withdrawal Amount, and Balance columns by dividing them by 1000
     scaling_factor = 10000
 
     df_combined['Deposit Amount'] /= scaling_factor
@@ -112,7 +108,7 @@ def process_data(bank1_data, bank2_data,payment_data):
     def choose_random_value(row):
         return random.choice(values)
 
-    # Apply the function to fill the column 'A' with random values
+    # Apply the function to fill the column with random values
     df_combined['Transaction Category'] = df_combined.apply(choose_random_value, axis=1)
 
     df_combined.to_csv('aggregated_data.csv',index=False)
@@ -140,8 +136,6 @@ def perform_analysis():
     # Calculate savings rate as a percentage of income or total transactions
     savings_rate = (df_combined['Deposit Amount'].sum() / df_combined['Withdrawal Amount'].sum()) * 100
     data['savings_rate'] = savings_rate
-    # Print the savings rate
-    # print(f"Savings Rate: {savings_rate}%")
 
     # financial recommendation
     # Convert 'Transaction Date' column to datetime data type
@@ -190,7 +184,7 @@ def perform_analysis():
 
     # Budgeting
     # Set budget limits for each category
-    budget = {'food': 5000, 'transportation': 200000, 'housing': 1000}
+    budget = {'food': 5000, 'transportation': 20000, 'housing': 10000}
 
     # Calculate actual spending for each category
     actual_spending = df_combined.groupby('Transaction Category')['Withdrawal Amount'].sum()
@@ -236,8 +230,7 @@ def perform_analysis():
     # Filter the data for the last 15 days
     df_combined = df_combined[(df_combined['Transaction Date'] >= fifteen_days_ago) & (df_combined['Transaction Date'] <= latest_date)]
 
-
-        # Get the latest balance
+    # Get the latest balance
     latest_balance = df_combined['Balance'].iloc[-1]
     data['balance'] = latest_balance
 

@@ -1,10 +1,5 @@
 from flask import Flask, render_template, request, redirect, jsonify,session
 from flask_cors import CORS
-
-import requests
-import json
-from datetime import datetime, timedelta
-import requests
 import pandas as pd
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 

@@ -1,0 +1,14 @@
+.main-container{
+    background-image: url("./hero-image.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  padding: 10%;
+}
+
+.signin-container{
+    /* background-color: azure; */
+    background-color: #eaeaea; /* Replace with your desired background color */
+    border-radius: 10px; /* Adjust the value to control the roundness of the borders */
+    padding: 10px;  
+}
